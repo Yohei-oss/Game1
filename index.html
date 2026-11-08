@@ -319,6 +319,14 @@ body {
 .intro-logo { width: min(52vmin, 360px); height: auto; display: block; overflow: visible; }
 .intro-logo path { transform-box: fill-box; transform-origin: 50% 50%; }
 .intro.half { will-change: transform; }
+.intro-wrap { position: fixed; inset: 0; z-index: 200; pointer-events: none; will-change: transform; }
+.intro-edge { position: fixed; left: 0; right: 0; pointer-events: none; }
+.intro-edge.in-top { height: 14px; background: linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,.16)); }    /* 上半分の切り口の内側（厚み） */
+.intro-edge.in-bot { height: 14px; background: linear-gradient(to top, rgba(0,0,0,0), rgba(0,0,0,.16)); }
+.intro-edge.cast-top { height: 22px; background: linear-gradient(to bottom, rgba(0,0,0,.32), rgba(0,0,0,0)); }   /* 開いた下に落ちる影 */
+.intro-edge.cast-bot { height: 22px; background: linear-gradient(to top, rgba(0,0,0,.32), rgba(0,0,0,0)); }
+.intro-slash { position: fixed; left: 0; right: 0; height: 4px; z-index: 202; pointer-events: none; transform-origin: 0 50%; border-radius: 2px;
+  background: linear-gradient(90deg, rgba(255,255,255,0), #fff 12%, #fff 88%, rgba(255,255,255,0)); box-shadow: 0 0 6px 2px rgba(255,214,60,.85), 0 0 18px 4px rgba(255,214,60,.45); }   /* 斬る線：白く光る線（ふちは YON の黄色） */
 .intro:not(.run) .intro-logo { visibility: hidden; }   /* 動き出す前に、出来上がったロゴが一瞬見えないように */
 </style>
 
@@ -1584,7 +1592,7 @@ body {
     ['マークツキペア', 'ワンペア＋残りの2枚が同じ色', 'r6 g6 b2 b8'],
     ['ミニストレート', '3枚の数字が続いている', 'g2 r3 b4 r8'],
     ['ワンペア', '同じ数字が2枚', 'r4 b4 g1 b7'],
-    ['ハイカード', '役なし（大きい数字で比べる）', 'r1 g3 b5 r8'],
+    ['ハイカード', 'ほかのハンドなし（大きい数字で比べる）', 'r1 g3 b5 r8'],
   ];
   const handTab = Object.assign(document.createElement('button'), { type: 'button', className: 'hand-tab', textContent: 'ハンド' });
   handTab.setAttribute('aria-expanded', 'false'); handTab.setAttribute('aria-controls', 'handPanel');
@@ -1593,9 +1601,9 @@ body {
   const upsetOf = r => UPSET.map(d => r - d).filter(x => x >= 1).sort((a, b) => a - b);
   handPanel.innerHTML = '<h2>ハンド（強い順）</h2><ol>' + HANDS.map(([nm, ds, ex], i) => {
     const up = upsetOf(i + 1);
-    return `<li><span class="no">${SHOWN_NO(i + 1)}</span><span class="nm">${nm}${up.length ? `<em class="gk" title="ゲコクジョウで勝てる役">${up.map(SHOWN_NO).sort((a, b) => b - a).join('・')}ニ カツ</em>` : ''}</span><span class="ds">${ds}</span><span class="ex">${ex.split(' ').map(t => `<b class="${t[0]}">${t.slice(1)}</b>`).join('')}</span></li>`;
+    return `<li><span class="no">${SHOWN_NO(i + 1)}</span><span class="nm">${nm}${up.length ? `<em class="gk" title="ゲコクジョウで勝てるハンド">${up.map(SHOWN_NO).sort((a, b) => b - a).join('・')}ニ カツ</em>` : ''}</span><span class="ds">${ds}</span><span class="ex">${ex.split(' ').map(t => `<b class="${t[0]}">${t.slice(1)}</b>`).join('')}</span></li>`;
   }).join('') +
-    '</ol><p class="gk-note"><b>ゲコクジョウ</b>：役の番号の差がちょうど <b>2</b> か <b>5</b> のときは、弱い方（番号が小さい方）が勝つ。それ以外は強い方（番号が大きい方）が勝つ</p>';
+    '</ol><p class="gk-note"><b>ゲコクジョウ</b>：ハンドの番号の差がちょうど <b>2</b> か <b>5</b> のときは、弱い方（番号が小さい方）が勝つ。それ以外は強い方（番号が大きい方）が勝つ</p>';
   // 開くたびに、いまの自分の手札でできるハンドを出す：
   //   選ぶ前は、手札3枚から2枚を選ぶ3通り（強い順、いちばん強いものに★）。選んだあとは、残した2枚の1通りだけ
   // 開くたびに、例を真ん中の2枚に合わせて作り直す：
@@ -1851,7 +1859,7 @@ body {
         カチ <b>${cnt('win') + cnt('oppFold')}</b> ・ マケ <b>${cnt('lose') + cnt('fold')}</b> ・ ヒキワケ <b>${cnt('tie')}</b><br>
         オリタ　アナタ <b>${cnt('fold')}</b> ・ アイテ <b>${cnt('oppFold')}</b><br>
         ゲコクジョウ デ カッタ <b>${L.filter(e => e.upset).length}</b> カイ<br>
-        ${best ? `イチバン ツヨイ ヤク　${SHOWN_NO(best)} ${ROLE[best]}<br>` : ''}
+        ${best ? `イチバン ツヨイ ハンド　${SHOWN_NO(best)} ${ROLE[best]}<br>` : ''}
         ${opt.surrender ? `${round}カイメ デ コウサン` : L.length < ROUNDS ? `${L.length}カイメ デ オワリ（モチスウ ガ タリナイ）` : `${ROUNDS}カイ ゼンブ オワリ`}
       </div>
       <ol>${rows}</ol>
@@ -2197,15 +2205,15 @@ body {
           <h3>試合の終わり</h3>
           <ul class="t-big"><li>7回が終わったら</li><li>どちらかの持ち数が <b>5マイより少なく</b> なったら</li></ul>
           <h3>ゲコクジョウ（2と5のルール）</h3>
-          <ul class="t-gk t-dots"><li>役の番号の差が ちょうど <b>2</b> か <b>5</b> なら、<b>弱い役の勝ち</b></li><li>例：ワンペア（2）は マークツキペア（4）に勝つ</li></ul></div>
+          <ul class="t-gk t-dots"><li>ハンドの番号の差が ちょうど <b>2</b> か <b>5</b> なら、<b>弱いハンドの勝ち</b></li><li>例：ワンペア（2）は マークツキペア（4）に勝つ</li></ul></div>
         <div class="t-page" data-p="4" hidden><h3>1回の流れ</h3>
           <ol class="t-steps">
             <li><span>参加料 <b>5マイ</b> を出す<small>手札3マイと、まん中に2マイが配られる。まん中は表のままで、お互い同じものを使う</small></span></li>
-            <li><span>手札から <b>2マイ</b> 選んで「ケッテイ」<small>残りの1マイは焼ける。選んだ2マイ＋まん中2マイ＝4マイで役を作る</small></span></li>
+            <li><span>手札から <b>2マイ</b> 選んで「ケッテイ」<small>残りの1マイは焼ける。選んだ2マイ＋まん中2マイ＝4マイでハンドを作る</small></span></li>
             <li><span>1回目のカケ</span></li>
             <li><span>出した2マイのうち <b>1マイ</b> を お互い見せる</span></li>
             <li><span>2回目のカケ<small>ここでは「オリル」もできる</small></span></li>
-            <li><span>対決<small>役で勝った方が、卓の上のチップを全部もらう。まったく同じなら引き分け</small></span></li>
+            <li><span>対決<small>ハンドで勝った方が、卓の上のチップを全部もらう。まったく同じなら引き分け</small></span></li>
           </ol>
           <p class="t-note">先手は1回ごとに交代（1回目はチップの投げ合いで決める）</p></div>
         <div class="t-page" data-p="3" hidden><h3>ツカウ カード（24マイ）</h3>
@@ -2215,9 +2223,9 @@ body {
         <div class="t-page" data-p="1" hidden><h3>ハンド（番号が大きいほど強い）</h3>
         <ol>${HANDS.map(([nm, ds, ex], i) => { const up = upsetOf(i + 1);
           return `<li><span class="no">${SHOWN_NO(i + 1)}</span><span class="nm">${nm}${up.length ? `<em class="gk">${up.map(SHOWN_NO).sort((a, b) => b - a).join('・')}ニ カツ</em>` : ''}</span><span class="ds">${ds}</span><span class="ex">${ex.split(' ').map(t => `<b class="${t[0]}">${t.slice(1)}</b>`).join('')}</span></li>`; }).join('')}</ol>
-        <ul class="t-gk t-dots"><li><b>赤い札</b>＝ゲコクジョウで勝てる役（番号の差がちょうど2か5）</li><li>同じ役なら、数字の大きさで比べる</li></ul></div>
+        <ul class="t-gk t-dots"><li><b>赤い札</b>＝ゲコクジョウで勝てるハンド（番号の差がちょうど2か5）</li><li>同じハンドなら、数字の大きさで比べる</li></ul></div>
         <div class="t-page" data-p="2" hidden><h3>自分の番</h3>
-          <ul class="t-big"><li><b>ヨウスミ</b>：賭けずに 相手に回す</li><li><b>カケル</b>：1回目は 1マイ か 2マイ、2回目は 1マイ か 4マイ</li></ul>
+          <ul class="t-big"><li><b>ヨウスミ</b>：賭けずに 相手に回す。2人とも ヨウスミ なら、チップを出さずに そのカケは終わり</li><li><b>カケル</b>：1回目は 1マイ か 2マイ、2回目は 1マイ か 4マイ。持ち数が足りないときは、持ち数の分だけ出す</li></ul>
           <h3>賭けられたら</h3>
           <ul class="t-big"><li><b>同じ枚数でカケル</b>：受ける</li><li><b>倍にしてカケル</b>：上乗せ（1回のカケで1度だけ）。上乗せされた方は、足りない分を足す</li><li><b>オリル</b>：2回目のカケだけ。それまでに出したチップは 相手のもの</li></ul>
           <p class="t-note">先手から順に動く</p></div>
@@ -2358,14 +2366,30 @@ body {
       showTitle(); preloadCards();   // 開いていく下で、もうタイトルが始まる
       if (reduceMotion) { el.remove(); return; }
       const r = logo.getBoundingClientRect(), y = Math.round(r.top + r.height * 149.4 / 256), H = innerHeight;   // 「YON」と「FLAT」の間の線
+      // 上半分・下半分をそれぞれ入れ物（.intro-wrap）に入れる。入れ物ごと動かすので、切り口の影もいっしょに動く
       const bottom = el.cloneNode(true); bottom.removeAttribute('id');
       el.classList.add('half'); bottom.classList.add('half');
       el.style.clipPath = `inset(0 0 ${H - y}px 0)`; bottom.style.clipPath = `inset(${y}px 0 0 0)`;
-      el.after(bottom);
-      const ease = 'cubic-bezier(.7,0,.3,1)';
-      const a1 = el.animate([{ transform: 'none' }, { transform: 'translateY(-6px)', offset: .18 }, { transform: `translateY(${-y}px)` }], { duration: 620, easing: ease, fill: 'forwards' });
-      const a2 = bottom.animate([{ transform: 'none' }, { transform: 'translateY(6px)', offset: .18 }, { transform: `translateY(${H - y}px)` }], { duration: 620, easing: ease, fill: 'forwards' });
-      a1.finished.then(() => el.remove(), () => el.remove()); a2.finished.then(() => bottom.remove(), () => bottom.remove());
+      const wrap = (node, top) => {
+        const w = document.createElement('div'); w.className = 'intro-wrap';
+        el.before(w); w.appendChild(node);
+        // 切り口の影：切り口のすぐ内側を少し暗く（厚み）＋外側に落ちる影（開いた下のタイトルに落ちる）
+        const inner = document.createElement('div'); inner.className = 'intro-edge ' + (top ? 'in-top' : 'in-bot'); inner.style.top = (top ? y - 14 : y) + 'px';
+        const cast = document.createElement('div'); cast.className = 'intro-edge ' + (top ? 'cast-top' : 'cast-bot'); cast.style.top = (top ? y : y - 22) + 'px';
+        w.append(inner, cast); return w;
+      };
+      const wTop = wrap(el, true), wBot = wrap(bottom, false);
+      // 1. 斬る線：白く光る細い線が、左から右へシュッと走る
+      const slash = document.createElement('div'); slash.className = 'intro-slash'; slash.style.top = (y - 2) + 'px';
+      document.body.appendChild(slash);
+      playSfx('cardThrow', .7);
+      slash.animate([{ transform: 'scaleX(0)', opacity: 1 }, { transform: 'scaleX(1)', opacity: 1 }], { duration: 170, easing: 'cubic-bezier(.2,.7,.3,1)', fill: 'forwards' });
+      // 2. 線が走りきったら、上下に割れて開く（止まらずに）。線はすっと消える
+      const ease = 'cubic-bezier(.6,0,.25,1)', D = 620, at = 230;
+      slash.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 220, delay: at, fill: 'forwards' }).finished.then(() => slash.remove(), () => slash.remove());
+      const a1 = wTop.animate([{ transform: 'none' }, { transform: `translateY(${-y - 30}px)` }], { duration: D, delay: at, easing: ease, fill: 'forwards' });
+      const a2 = wBot.animate([{ transform: 'none' }, { transform: `translateY(${H - y + 30}px)` }], { duration: D, delay: at, easing: ease, fill: 'forwards' });
+      a1.finished.then(() => wTop.remove(), () => wTop.remove()); a2.finished.then(() => wBot.remove(), () => wBot.remove());
     };
     if (reduceMotion) { split(); return; }
     el.addEventListener('pointerdown', split);   // タップで飛ばせる（そのタップで BGM も流れ始める）

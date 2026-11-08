@@ -6,8 +6,6 @@
 
 ## ▶ [ここから遊ぶ](https://yohei-oss.github.io/Game1/)
 
-https://yohei-oss.github.io/Game1/
-
 ![タイトル画面](screenshots/title.webp)
 
 ## あそびかた

@@ -173,6 +173,7 @@ body {
 .title-panel .t-gk { margin: 6px 0 0; padding: 7px 10px; font-size: 12px; line-height: 1.6; background: #ffe0d8; border: 2px solid var(--ink); border-radius: 10px; }
 .title-panel .t-gk b { color: #c9361f; }
 .title-panel .t-note { font-size: 11px; color: #5a554c; }
+.title-panel .t-joke { margin: 10px 0 0; padding-top: 7px; border-top: 1.5px dashed rgba(20,20,20,.25); text-align: right; font-size: 10.5px; color: #8a8273; transform: rotate(-1.5deg); }   /* ルールのいちばん下の小さなジョーク（どのタブでも出る） */
 .title-panel .t-stat { display: flex; justify-content: space-around; margin: 8px 0 4px; padding: 6px 4px; background: #fff8d0; border: 2px solid var(--ink); border-radius: 10px; text-align: center; font-size: 11px; }
 .title-panel .t-stat b { display: block; font: 22px "Luckiest Guy", sans-serif; line-height: 1.1; }
 .title-panel .t-sub { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 11.5px; margin: 6px 0; }
@@ -2215,7 +2216,8 @@ body {
           <ul class="t-big"><li><b>ヨウスミ</b>：賭けずに 相手に回す</li><li><b>カケル</b>：1回目は 1マイ か 2マイ、2回目は 1マイ か 4マイ</li></ul>
           <h3>賭けられたら</h3>
           <ul class="t-big"><li><b>同じ枚数でカケル</b>：受ける</li><li><b>倍にしてカケル</b>：上乗せ（1回のカケで1度だけ）。上乗せされた方は、足りない分を足す</li><li><b>オリル</b>：2回目のカケだけ。それまでに出したチップは 相手のもの</li></ul>
-          <p class="t-note">先手から順に動く</p></div>`;
+          <p class="t-note">先手から順に動く</p></div>
+        <p class="t-joke">それでも わからないなら、AIに聞いて</p>`;
       // タブで切り替える（スクロールしなくても1ページに収まるように分ける）
       pn.querySelector('.t-tabs').addEventListener('click', e => {
         const b = e.target.closest('[data-p]'); if (!b) return; playSfx('chipClack', .3);

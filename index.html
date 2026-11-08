@@ -173,6 +173,10 @@ body {
 .title-panel .t-gk { margin: 6px 0 0; padding: 7px 10px; font-size: 12px; line-height: 1.6; background: #ffe0d8; border: 2px solid var(--ink); border-radius: 10px; }
 .title-panel .t-gk b { color: #c9361f; }
 .title-panel .t-note { font-size: 11px; color: #5a554c; }
+.title-panel .t-dots { list-style: none; margin: 4px 0 6px; padding: 0; }
+.title-panel .t-dots li { display: block; position: relative; padding: 1px 0 1px 14px; border: 0; font-size: 12px; line-height: 1.6; }
+.title-panel .t-dots li::before { content: ""; position: absolute; left: 3px; top: .72em; width: 5px; height: 5px; border-radius: 50%; background: var(--ink); }
+.title-panel .t-gk.t-dots { padding: 6px 10px; }
 .title-panel .t-joke { margin: 10px 0 0; padding-top: 7px; border-top: 1.5px dashed rgba(20,20,20,.25); text-align: right; font-size: 10.5px; color: #8a8273; transform: rotate(-1.5deg); }   /* ルールのいちばん下の小さなジョーク（どのタブでも出る） */
 .title-panel .t-stat { display: flex; justify-content: space-around; margin: 8px 0 4px; padding: 6px 4px; background: #fff8d0; border: 2px solid var(--ink); border-radius: 10px; text-align: center; font-size: 11px; }
 .title-panel .t-stat b { display: block; font: 22px "Luckiest Guy", sans-serif; line-height: 1.1; }
@@ -2193,7 +2197,7 @@ body {
           <h3>試合の終わり</h3>
           <ul class="t-big"><li>7回が終わったら</li><li>どちらかの持ち数が <b>5マイより少なく</b> なったら</li></ul>
           <h3>ゲコクジョウ（2と5のルール）</h3>
-          <p class="t-gk">役の番号の差が ちょうど <b>2</b> か <b>5</b> なら、<b>弱い役の勝ち</b>。<br>例：ワンペア（2）は マークツキペア（4）に勝つ</p></div>
+          <ul class="t-gk t-dots"><li>役の番号の差が ちょうど <b>2</b> か <b>5</b> なら、<b>弱い役の勝ち</b></li><li>例：ワンペア（2）は マークツキペア（4）に勝つ</li></ul></div>
         <div class="t-page" data-p="4" hidden><h3>1回の流れ</h3>
           <ol class="t-steps">
             <li><span>参加料 <b>5マイ</b> を出す<small>手札3マイと、まん中に2マイが配られる。まん中は表のままで、お互い同じものを使う</small></span></li>
@@ -2205,13 +2209,13 @@ body {
           </ol>
           <p class="t-note">先手は1回ごとに交代（1回目はチップの投げ合いで決める）</p></div>
         <div class="t-page" data-p="3" hidden><h3>ツカウ カード（24マイ）</h3>
-          <p>数字 1〜8 × 色 3つ（赤・青・緑）。同じカードは1マイずつ。色がトランプのマークの代わり。</p>
+          <ul class="t-dots"><li>数字 1〜8 × 色 3つ（赤・青・緑）</li><li>同じカードは1マイずつ</li><li>色がトランプのマークの代わり</li></ul>
           <div class="t-deck">${['red', 'blue', 'green'].map(c => `<div class="t-deck-row"><span class="t-deck-c ${c[0]}">${{ red: '赤', blue: '青', green: '緑' }[c]}</span>${[1, 2, 3, 4, 5, 6, 7, 8].map(n => `<img src="art/${c}-${n}.webp" alt="${{ red: '赤', blue: '青', green: '緑' }[c]}の${n}" loading="lazy">`).join('')}</div>`).join('')}</div>
-          <p>毎回よく混ぜて、まん中に2マイ・お互いに3マイずつ配る。</p></div>
+          <ul class="t-dots"><li>毎回よく混ぜる</li><li>まん中に2マイ・お互いに3マイずつ配る</li></ul></div>
         <div class="t-page" data-p="1" hidden><h3>ハンド（番号が大きいほど強い）</h3>
         <ol>${HANDS.map(([nm, ds, ex], i) => { const up = upsetOf(i + 1);
           return `<li><span class="no">${SHOWN_NO(i + 1)}</span><span class="nm">${nm}${up.length ? `<em class="gk">${up.map(SHOWN_NO).sort((a, b) => b - a).join('・')}ニ カツ</em>` : ''}</span><span class="ds">${ds}</span><span class="ex">${ex.split(' ').map(t => `<b class="${t[0]}">${t.slice(1)}</b>`).join('')}</span></li>`; }).join('')}</ol>
-        <p class="t-gk"><b>赤い札</b>＝ゲコクジョウで勝てる役（番号の差がちょうど2か5）。同じ役なら、数字の大きさで比べる。</p></div>
+        <ul class="t-gk t-dots"><li><b>赤い札</b>＝ゲコクジョウで勝てる役（番号の差がちょうど2か5）</li><li>同じ役なら、数字の大きさで比べる</li></ul></div>
         <div class="t-page" data-p="2" hidden><h3>自分の番</h3>
           <ul class="t-big"><li><b>ヨウスミ</b>：賭けずに 相手に回す</li><li><b>カケル</b>：1回目は 1マイ か 2マイ、2回目は 1マイ か 4マイ</li></ul>
           <h3>賭けられたら</h3>

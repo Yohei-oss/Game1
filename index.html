@@ -2372,7 +2372,7 @@ body {
       el.style.clipPath = `inset(0 0 ${H - y}px 0)`; bottom.style.clipPath = `inset(${y}px 0 0 0)`;
       const wrap = (node, top) => {
         const w = document.createElement('div'); w.className = 'intro-wrap';
-        el.before(w); w.appendChild(node);
+        document.body.appendChild(w); w.appendChild(node);   // 入れ物はどちらも body の直下に（入れ子にすると、下半分が上半分の動きも足されて止まって見える）
         // 切り口の影：切り口のすぐ内側を少し暗く（厚み）＋外側に落ちる影（開いた下のタイトルに落ちる）
         const inner = document.createElement('div'); inner.className = 'intro-edge ' + (top ? 'in-top' : 'in-bot'); inner.style.top = (top ? y - 14 : y) + 'px';
         const cast = document.createElement('div'); cast.className = 'intro-edge ' + (top ? 'cast-top' : 'cast-bot'); cast.style.top = (top ? y : y - 22) + 'px';

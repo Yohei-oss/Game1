@@ -302,9 +302,11 @@ body {
 /* ページを開いた最初のロゴ動画（YON FLAT。音なしで自動再生）：白い画面いっぱいに出し、終わったら白ごとふわっと消えてタイトルへ */
 .intro { position: fixed; inset: 0; z-index: 200; background: #fff; display: flex; align-items: center; justify-content: center; }
 .intro video { width: 100%; height: 100%; object-fit: cover; background: #fff; pointer-events: none; }
+.intro-half { position: fixed; inset: 0; z-index: 201; pointer-events: none; will-change: transform; }
+.intro-half canvas { display: block; width: 100%; height: 100%; }
 </style>
 
-<div class="intro" id="intro" aria-hidden="true"><video src="video/intro.mp4" muted playsinline autoplay preload="auto"></video></div>
+<div class="intro" id="intro" aria-hidden="true"><video src="video/intro.mp4" muted playsinline preload="auto"></video></div>
 <div class="rail left" aria-hidden="true"></div>
 <div class="rail right" aria-hidden="true"></div>
 
@@ -1237,7 +1239,8 @@ body {
   }
   // 表の絵と裏面は、最初に読み込んでおく
   // 相手のカードの表は勝負のときに決まるので、24枚ぜんぶ先に読み込む（読み込み待ちで返すのが遅れたり、白くなったりしないように）
-  ['back.webp', ...['red', 'blue', 'green'].flatMap(c => [1, 2, 3, 4, 5, 6, 7, 8].map(n => `art/${c}-${n}.webp`))].forEach(preload);
+  // （ロゴ動画の入りを邪魔しないように、読み込むのはロゴ動画が終わってから。playIntro の finish で呼ぶ）
+  const preloadCards = () => ['back.webp', ...['red', 'blue', 'green'].flatMap(c => [1, 2, 3, 4, 5, 6, 7, 8].map(n => `art/${c}-${n}.webp`))].forEach(preload);
   // 役の名前の札：角の丸い板（黒ふち）＋上半分の光の帯＋左はしに役の番号の黒い丸
   const plateSVG = (w, h, fill, n) => {
     const r = h * .34, sw = Math.max(3, h * .07), cr = h * .3, cx = h * .48;
@@ -2313,24 +2316,49 @@ body {
     showTitle();
   }
   // はじめはロゴ動画 → タイトルの場面（PvE を押すと、7回勝負の1回目の先手決めから）
-  // 動画が終わる（3.5秒）か、タップするか、再生できなかったら、タイトルを始めて、白ごと0.45秒で消える
+  // 入りがきれいにそろうように、動画が最後まで読み込めて、フォントの準備もできてから再生する（最大1.5秒待つ）。
+  // 動画が終わる（3.47秒）かタップしたら、その瞬間の画面がまん中から左右に割れて開き（スプリット）、下からタイトルが出てくる。
+  // 再生できなかったときや、念のための7秒は、白をふわっと消すだけ
   (function playIntro() {
     const el = document.getElementById('intro'), v = el && el.querySelector('video');
-    if (!el) { showTitle(); return; }
+    if (!el) { preloadCards(); showTitle(); return; }
     let done = false;
-    const finish = () => {
+    const finish = split => {
       if (done) return; done = true;
       el.style.pointerEvents = 'none';
-      showTitle();   // 白が消えていく下で、もうタイトルが始まる（卓のカードなどが一瞬見えないように）
+      showTitle(); preloadCards();   // 開いていく下で、もうタイトルが始まる
       if (reduceMotion) { el.remove(); return; }
+      if (split && v.readyState >= 2) {
+        // いまの画面（動画のコマ）を左右2枚に分けて、外へすべらせる
+        const W = innerWidth, H = innerHeight, k = Math.max(W / v.videoWidth, H / v.videoHeight), dw = v.videoWidth * k, dh = v.videoHeight * k;
+        const halves = [0, 1].map(side => {
+          const d = document.createElement('div'); d.className = 'intro-half';
+          const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+          const g = cv.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, W, H); g.drawImage(v, (W - dw) / 2, (H - dh) / 2, dw, dh);
+          d.appendChild(cv); d.style.clipPath = side ? 'inset(0 0 0 50%)' : 'inset(0 50% 0 0)';
+          document.body.appendChild(d); return d;
+        });
+        el.remove();
+        halves.forEach((d, side) => d.animate([{ transform: 'none' }, { transform: `translateX(${side ? '' : '-'}${W * .55}px)` }],
+          { duration: 700, easing: 'cubic-bezier(.75,0,.25,1)', fill: 'forwards' }).finished.then(() => d.remove(), () => d.remove()));
+        return;
+      }
       el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 450, easing: 'ease-out', fill: 'forwards' }).finished.then(() => el.remove(), () => el.remove());
     };
-    if (reduceMotion) { finish(); return; }
-    v.addEventListener('ended', finish);
-    v.addEventListener('error', finish);
-    el.addEventListener('pointerdown', finish);   // タップで飛ばせる（そのタップで BGM も流れ始める）
-    const p = v.play(); if (p) p.catch(finish);    // 自動再生できなかったら飛ばす
-    setTimeout(finish, 6000);                     // 念のため：何があっても6秒でタイトルへ
+    if (reduceMotion) { finish(false); return; }
+    v.addEventListener('ended', () => finish(true));
+    v.addEventListener('error', () => finish(false));
+    el.addEventListener('pointerdown', () => finish(true));   // タップで飛ばせる（そのタップで BGM も流れ始める）
+    let started = false;
+    const start = () => {
+      if (started || done) return; started = true;
+      requestAnimationFrame(() => requestAnimationFrame(() => { const p = v.play(); if (p) p.catch(() => finish(false)); }));   // 2コマ待って、画面が落ち着いてから
+    };
+    const fontsReady = document.fonts ? document.fonts.ready : Promise.resolve();
+    const videoReady = new Promise(r => { if (v.readyState >= 4) r(); else v.addEventListener('canplaythrough', r, { once: true }); });
+    Promise.all([fontsReady, videoReady]).then(start);
+    setTimeout(start, 1500);                  // 待ちすぎない：1.5秒で始める
+    setTimeout(() => finish(false), 7000);    // 念のため：何があっても7秒でタイトルへ
   })();
 })();
 </script>

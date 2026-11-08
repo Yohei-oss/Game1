@@ -4,6 +4,10 @@
 手札3枚から2枚を選び、真ん中の2枚と合わせた4枚で役を作ります。
 ブラウザだけで遊べます（PvE：コンピューターと対戦）。
 
+## ▶ [ここから遊ぶ](https://yohei-oss.github.io/Game1/)
+
+https://yohei-oss.github.io/Game1/
+
 ![タイトル画面](screenshots/title.webp)
 
 ## あそびかた

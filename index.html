@@ -299,14 +299,15 @@ body {
 .cb-num.cb-fold span { margin-left: 0; max-width: 90%; }   /* 降りたときの「オリタ」の札：番号の丸がないので文字は真ん中 */
 .result-msg { position: fixed; z-index: 46; left: 50%; top: 50%; margin: 0; transform: translate(-50%, -50%); pointer-events: none; white-space: nowrap;
   font: 30px "Mochiy Pop One", sans-serif; color: #ffe36a; -webkit-text-stroke: .24em var(--ink); paint-order: stroke fill; opacity: 0; }
-/* ページを開いた最初のロゴ動画（YON FLAT。音なしで自動再生）：白い画面いっぱいに出し、終わったら白ごとふわっと消えてタイトルへ */
+/* ページを開いた最初のロゴ（YON FLAT）：白い画面のまん中で、ユーザーの SVG を動かして出し、最後に「YON」と「FLAT」の間で上下に割れて（スプリット）タイトルへ */
 .intro { position: fixed; inset: 0; z-index: 200; background: #fff; display: flex; align-items: center; justify-content: center; }
-.intro video { width: 100%; height: 100%; object-fit: cover; background: #fff; pointer-events: none; }
-.intro-half { position: fixed; inset: 0; z-index: 201; pointer-events: none; will-change: transform; }
-.intro-half canvas { display: block; width: 100%; height: 100%; }
+.intro-logo { width: min(52vmin, 360px); height: auto; display: block; overflow: visible; }
+.intro-logo path { transform-box: fill-box; transform-origin: 50% 50%; }
+.intro.half { will-change: transform; }
+.intro:not(.run) .intro-logo { visibility: hidden; }   /* 動き出す前に、出来上がったロゴが一瞬見えないように */
 </style>
 
-<div class="intro" id="intro" aria-hidden="true"><video src="video/intro.mp4" muted playsinline preload="auto"></video></div>
+<div class="intro" id="intro" aria-hidden="true"><svg class="intro-logo" viewBox="0 0 256 256"><defs><clipPath id="lgClip"><path d="M34 56A22 22 0 0 1 56 34H200A22 22 0 0 1 222 56V200A22 22 0 0 1 200 222H56A22 22 0 0 1 34 200Z"/></clipPath></defs><path class="lg-sq" fill="#121212" d="M34 56A22 22 0 0 1 56 34H200A22 22 0 0 1 222 56V200A22 22 0 0 1 200 222H56A22 22 0 0 1 34 200Z"/><g clip-path="url(#lgClip)"><path class="lg-y" fill="#fff" fill-rule="evenodd" d="M48 48L62.89 48L73.47 77.16L84.04 48L98.93 48L80.47 98.92L80.47 145.92L66.47 145.92L66.47 98.92Z"/><path class="lg-y" fill="#fff" fill-rule="evenodd" d="M105.93 65.11A17.11 17.11 0 0 1 123.04 48H136.35A17.11 17.11 0 0 1 153.47 65.11V128.81A17.11 17.11 0 0 1 136.35 145.92H123.04A17.11 17.11 0 0 1 105.93 128.81ZM119.93 65.11A3.11 3.11 0 0 1 123.04 62H136.35A3.11 3.11 0 0 1 139.47 65.11V128.81A3.11 3.11 0 0 1 136.35 131.92H123.04A3.11 3.11 0 0 1 119.93 128.81Z"/><path class="lg-y" fill="#fff" fill-rule="evenodd" d="M160.47 48L174.47 48L194 94.4L194 48L208 48L208 145.92L194 145.92L174.47 99.52L174.47 145.92L160.47 145.92Z"/><path class="lg-f" fill="#fff" fill-rule="evenodd" d="M48 152.92L81.43 152.92L81.43 163.92L59 163.92L59 172.76L76.75 172.76L76.75 182.88L59 182.88L59 208L48 208Z"/><path class="lg-f" fill="#fff" fill-rule="evenodd" d="M88.43 152.92L99.43 152.92L99.43 197L120.1 197L120.1 208L88.43 208Z"/><path class="lg-f" fill="#fff" fill-rule="evenodd" d="M127.1 208 V166.22 A13.3 13.3 0 0 1 140.4 152.92 H150.75 A13.3 13.3 0 0 1 164.05 166.22 V208 H153.05 V185.95 H138.1 V208 ZM138.1 166.22A2.3 2.3 0 0 1 140.4 163.92H150.75A2.3 2.3 0 0 1 153.05 166.22V175.83H138.1Z"/><path class="lg-f" fill="#fff" fill-rule="evenodd" d="M171.05 152.92L208 152.92L208 163.92L195.03 163.92L195.03 208L184.03 208L184.03 163.92L171.05 163.92Z"/></g></svg></div>
 <div class="rail left" aria-hidden="true"></div>
 <div class="rail right" aria-hidden="true"></div>
 
@@ -2315,50 +2316,53 @@ body {
     updateGauge(); showRound();
     showTitle();
   }
-  // はじめはロゴ動画 → タイトルの場面（PvE を押すと、7回勝負の1回目の先手決めから）
-  // 入りがきれいにそろうように、動画が最後まで読み込めて、フォントの準備もできてから再生する（最大1.5秒待つ）。
-  // 動画が終わる（3.47秒）かタップしたら、その瞬間の画面がまん中から左右に割れて開き（スプリット）、下からタイトルが出てくる。
-  // 再生できなかったときや、念のための7秒は、白をふわっと消すだけ
+  // はじめはロゴ（YON FLAT）→ タイトルの場面（PvE を押すと、7回勝負の1回目の先手決めから）
+  // ユーザーのロゴ動画の動きを、SVG の部品（黒い四角・YON・FLAT の文字）で作り直したもの（画面のコマ数でなめらかに動く）：
+  //   0.1秒 四角が回りながらポン → 1.0秒「YON」が上から1文字ずつ → 1.55秒「FLAT」が下から1文字ずつ → 2.25秒 軽く弾む
+  //   → 3.4秒「YON」と「FLAT」の間で上下に割れて開き（スプリット）、下からタイトルが出てくる。タップでいつでも割れて開く
   (function playIntro() {
-    const el = document.getElementById('intro'), v = el && el.querySelector('video');
+    const el = document.getElementById('intro');
     if (!el) { preloadCards(); showTitle(); return; }
+    const logo = el.querySelector('.intro-logo'), sq = logo.querySelector('.lg-sq');
+    const ys = [...logo.querySelectorAll('.lg-y')], fs = [...logo.querySelectorAll('.lg-f')];
     let done = false;
-    const finish = split => {
+    const anims = [];
+    const go = (node, frames, opt) => { const a = node.animate(frames, { fill: 'backwards', ...opt }); anims.push(a); return a; };
+    const split = () => {
       if (done) return; done = true;
+      anims.forEach(a => { try { a.finish(); } catch (e) {} });   // 途中でタップしても、ロゴが出そろった形で割れる
+      el.classList.add('run');
       el.style.pointerEvents = 'none';
       showTitle(); preloadCards();   // 開いていく下で、もうタイトルが始まる
       if (reduceMotion) { el.remove(); return; }
-      if (split && v.readyState >= 2) {
-        // いまの画面（動画のコマ）を左右2枚に分けて、外へすべらせる
-        const W = innerWidth, H = innerHeight, k = Math.max(W / v.videoWidth, H / v.videoHeight), dw = v.videoWidth * k, dh = v.videoHeight * k;
-        const halves = [0, 1].map(side => {
-          const d = document.createElement('div'); d.className = 'intro-half';
-          const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
-          const g = cv.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, W, H); g.drawImage(v, (W - dw) / 2, (H - dh) / 2, dw, dh);
-          d.appendChild(cv); d.style.clipPath = side ? 'inset(0 0 0 50%)' : 'inset(0 50% 0 0)';
-          document.body.appendChild(d); return d;
-        });
-        el.remove();
-        halves.forEach((d, side) => d.animate([{ transform: 'none' }, { transform: `translateX(${side ? '' : '-'}${W * .55}px)` }],
-          { duration: 700, easing: 'cubic-bezier(.75,0,.25,1)', fill: 'forwards' }).finished.then(() => d.remove(), () => d.remove()));
-        return;
-      }
-      el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 450, easing: 'ease-out', fill: 'forwards' }).finished.then(() => el.remove(), () => el.remove());
+      const r = logo.getBoundingClientRect(), y = Math.round(r.top + r.height * 149.4 / 256), H = innerHeight;   // 「YON」と「FLAT」の間の線
+      const bottom = el.cloneNode(true); bottom.removeAttribute('id');
+      el.classList.add('half'); bottom.classList.add('half');
+      el.style.clipPath = `inset(0 0 ${H - y}px 0)`; bottom.style.clipPath = `inset(${y}px 0 0 0)`;
+      el.after(bottom);
+      const ease = 'cubic-bezier(.7,0,.3,1)';
+      const a1 = el.animate([{ transform: 'none' }, { transform: 'translateY(-6px)', offset: .18 }, { transform: `translateY(${-y}px)` }], { duration: 620, easing: ease, fill: 'forwards' });
+      const a2 = bottom.animate([{ transform: 'none' }, { transform: 'translateY(6px)', offset: .18 }, { transform: `translateY(${H - y}px)` }], { duration: 620, easing: ease, fill: 'forwards' });
+      a1.finished.then(() => el.remove(), () => el.remove()); a2.finished.then(() => bottom.remove(), () => bottom.remove());
     };
-    if (reduceMotion) { finish(false); return; }
-    v.addEventListener('ended', () => finish(true));
-    v.addEventListener('error', () => finish(false));
-    el.addEventListener('pointerdown', () => finish(true));   // タップで飛ばせる（そのタップで BGM も流れ始める）
-    let started = false;
-    const start = () => {
-      if (started || done) return; started = true;
-      requestAnimationFrame(() => requestAnimationFrame(() => { const p = v.play(); if (p) p.catch(() => finish(false)); }));   // 2コマ待って、画面が落ち着いてから
-    };
-    const fontsReady = document.fonts ? document.fonts.ready : Promise.resolve();
-    const videoReady = new Promise(r => { if (v.readyState >= 4) r(); else v.addEventListener('canplaythrough', r, { once: true }); });
-    Promise.all([fontsReady, videoReady]).then(start);
-    setTimeout(start, 1500);                  // 待ちすぎない：1.5秒で始める
-    setTimeout(() => finish(false), 7000);    // 念のため：何があっても7秒でタイトルへ
+    if (reduceMotion) { split(); return; }
+    el.addEventListener('pointerdown', split);   // タップで飛ばせる（そのタップで BGM も流れ始める）
+    requestAnimationFrame(() => requestAnimationFrame(() => {   // 2コマ待って、画面が落ち着いてから
+      el.classList.add('run');
+      // 1. 黒い四角：小さく回りながら出て、少し行き過ぎて、ゆれて止まる
+      go(sq, [{ transform: 'scale(.04) rotate(-35deg)' }, { transform: 'scale(1.14) rotate(12deg)', offset: .42 }, { transform: 'scale(.95) rotate(-5deg)', offset: .64 },
+        { transform: 'scale(1.02) rotate(2deg)', offset: .82 }, { transform: 'none' }], { duration: 800, delay: 100, easing: 'cubic-bezier(.3,.7,.4,1)' });
+      // 2. 「YON」：上から1文字ずつ落ちてきて、少しはねる（四角の外は見えない）
+      ys.forEach((p, i) => go(p, [{ transform: 'translateY(-135%)' }, { transform: 'translateY(6%)', offset: .7 }, { transform: 'none' }],
+        { duration: 340, delay: 1000 + i * 110, easing: 'cubic-bezier(.3,.6,.4,1)' }));
+      // 3. 「FLAT」：下から1文字ずつ
+      fs.forEach((p, i) => go(p, [{ transform: 'translateY(135%)' }, { transform: 'translateY(-8%)', offset: .7 }, { transform: 'none' }],
+        { duration: 300, delay: 1550 + i * 90, easing: 'cubic-bezier(.3,.6,.4,1)' }));
+      // 4. 全体が軽く弾む
+      go(logo, [{ transform: 'none' }, { transform: 'scale(1.06)', offset: .4 }, { transform: 'none' }], { duration: 300, delay: 2250, easing: 'ease-in-out' });
+      // 5. 割れて開く
+      setTimeout(split, 3400);
+    }));
   })();
 })();
 </script>

@@ -6,6 +6,8 @@
 
 ## ▶ [ここから遊ぶ](https://yohei-oss.github.io/Game1/)
 
+※ スマホで遊ぶのは、いまはおすすめしません（パソコン推奨）
+
 ![タイトル画面](screenshots/title.webp)
 
 ## あそびかた

@@ -144,7 +144,7 @@ body {
 /* ルール・セッテイの板（「ハンド」の一覧と同じ板） */
 .title-panel { z-index: 55; }
 .title-panel h3 { margin: 12px 0 4px; font-size: 13px; padding: 2px 8px; background: #fff1a8; border: 2px solid var(--ink); border-radius: 8px; }
-.title-panel p { margin: 4px 0; font-size: 11.5px; line-height: 1.65; }
+.title-panel p { margin: 4px 0; font-size: 12px; line-height: 1.65; }
 .title-panel .t-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 10px 0; font-size: 14px; }
 .title-panel .t-tog { display: flex; gap: 6px; }
 .title-panel .t-tog button { font: 14px "Mochiy Pop One", sans-serif; min-width: 64px; min-height: 40px; border: 3px solid var(--ink); border-radius: 999px; background: #e6dfcc; color: var(--ink); cursor: pointer; }
@@ -153,8 +153,8 @@ body {
 .title-panel .t-x { font: 12px "Mochiy Pop One", sans-serif; color: var(--paper); background: #4a4744; border: 2px solid var(--ink); border-radius: 999px;
   min-height: 32px; padding: 0 12px; cursor: pointer; -webkit-text-stroke: .2em var(--ink); paint-order: stroke fill; box-shadow: 0 3px 0 rgba(0,0,0,.3); }
 .title-panel .t-x:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,.3); }
-.title-panel .t-tabs { display: flex; gap: 6px; margin-bottom: 8px; }
-.title-panel .t-tabs button { flex: 1; font: 13px "Mochiy Pop One", sans-serif; min-height: 36px; border: 2px solid var(--ink); border-radius: 10px; background: #e6dfcc; color: var(--ink); cursor: pointer; }
+.title-panel .t-tabs { display: flex; gap: 5px; margin-bottom: 10px; }
+.title-panel .t-tabs button { flex: 1; min-width: 0; padding: 0 2px; font: 12.5px "Mochiy Pop One", sans-serif; min-height: 36px; border: 2px solid var(--ink); border-radius: 10px; background: #e6dfcc; color: var(--ink); cursor: pointer; }
 .title-panel .t-tabs button[aria-selected="true"] { background: #c9a227; color: var(--paper); -webkit-text-stroke: .2em var(--ink); paint-order: stroke fill; }
 .title-panel .t-page[hidden] { display: none; }
 .title-panel .t-deck { display: grid; gap: 6px; margin: 8px 0; }
@@ -163,6 +163,16 @@ body {
 .title-panel .t-deck-c { display: grid; place-items: center; height: 22px; border: 1.5px solid var(--ink); border-radius: 6px; font-size: 11px; color: #fff; -webkit-text-stroke: .2em var(--ink); paint-order: stroke fill; }
 .title-panel .t-deck-c.r { background: #e0574a; } .title-panel .t-deck-c.b { background: #4a86d8; } .title-panel .t-deck-c.g { background: #4fae5a; }
 .title-panel .t-page h3:first-child { margin-top: 0; }
+.title-panel .t-big { list-style: none; margin: 6px 0 10px; padding: 0; display: grid; gap: 5px; }
+.title-panel .t-big li { display: block; padding: 6px 10px; background: #fff; border: 2px solid var(--ink); border-radius: 10px; font-size: 12.5px; line-height: 1.5; }
+.title-panel .t-big b, .title-panel .t-steps b { color: #c9361f; }
+.title-panel .t-steps { counter-reset: st; margin: 6px 0 8px; }
+.title-panel .t-steps li { counter-increment: st; display: grid; grid-template-columns: 24px 1fr; grid-template-rows: auto; column-gap: 9px; align-items: center; padding: 6px 0; font-size: 12.5px; line-height: 1.45; }
+.title-panel .t-steps li::before { content: counter(st); width: 22px; height: 22px; display: grid; place-items: center; background: #c9a227; color: #fff; border: 2px solid var(--ink); border-radius: 50%; font-size: 12px; -webkit-text-stroke: .15em var(--ink); paint-order: stroke fill; }
+.title-panel .t-steps small { display: block; margin-top: 2px; font-size: 10.5px; line-height: 1.5; color: #5a554c; }
+.title-panel .t-gk { margin: 6px 0 0; padding: 7px 10px; font-size: 12px; line-height: 1.6; background: #ffe0d8; border: 2px solid var(--ink); border-radius: 10px; }
+.title-panel .t-gk b { color: #c9361f; }
+.title-panel .t-note { font-size: 11px; color: #5a554c; }
 .title-panel .t-stat { display: flex; justify-content: space-around; margin: 8px 0 4px; padding: 6px 4px; background: #fff8d0; border: 2px solid var(--ink); border-radius: 10px; text-align: center; font-size: 11px; }
 .title-panel .t-stat b { display: block; font: 22px "Luckiest Guy", sans-serif; line-height: 1.1; }
 .title-panel .t-sub { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 11.5px; margin: 6px 0; }
@@ -2176,30 +2186,36 @@ body {
     if (k === 'rule') {
       pn.setAttribute('aria-label', 'ルール');
       pn.innerHTML = `<div class="t-head"><h2>ルール</h2><button type="button" class="t-x t-close">トジル</button></div>
-        <div class="t-tabs" role="tablist"><button type="button" role="tab" data-p="0" aria-selected="true">キホン</button><button type="button" role="tab" data-p="3" aria-selected="false">カード</button><button type="button" role="tab" data-p="1" aria-selected="false">ハンド</button><button type="button" role="tab" data-p="2" aria-selected="false">カケ</button></div>
+        <div class="t-tabs" role="tablist"><button type="button" role="tab" data-p="0" aria-selected="true">キホン</button><button type="button" role="tab" data-p="4" aria-selected="false">ナガレ</button><button type="button" role="tab" data-p="3" aria-selected="false">カード</button><button type="button" role="tab" data-p="1" aria-selected="false">ハンド</button><button type="button" role="tab" data-p="2" aria-selected="false">カケ</button></div>
         <div class="t-page" data-p="0"><h3>モクテキ</h3>
-        <p>コンピューターと7回勝負。はじめの持ち数はお互い40枚。7回が終わったとき、持ち数が多い方の勝ち。</p>
-        <h3>1回の流れ</h3>
-        <p>① 参加料として5枚を出す。カード（数字1〜8 × 赤・青・緑の24枚）が配られる。真ん中の2枚は表のまま、お互い同じものを使う。</p>
-        <p>② 手札3枚から2枚を選んで「ケッテイ」。残りの1枚は焼ける。選んだ2枚＋真ん中の2枚の4枚で役を作る。</p>
-        <p>③ 1回目の賭け → お互い、出した2枚のうち1枚を見せる → 2回目の賭け。</p>
-        <p>④ 対決。役で勝った方が、卓の上のチップを全部もらう。役も数字もまったく同じなら引き分け（お互い自分の分を引き取る）。</p>
-        <h3>試合の終わり</h3>
-        <p>7回が終わるか、どちらかの持ち数が5枚より少なくなったら終わり。最後に持ち数を比べて勝ち負けが決まる。</p></div>
+          <ul class="t-big"><li>コンピューターと <b>最大7回</b> 勝負</li><li>はじめの持ち数は お互い <b>40マイ</b></li><li>最後に <b>持ち数が多い方</b> の勝ち</li></ul>
+          <h3>試合の終わり</h3>
+          <ul class="t-big"><li>7回が終わったら</li><li>どちらかの持ち数が <b>5マイより少なく</b> なったら</li></ul>
+          <h3>ゲコクジョウ（2と5のルール）</h3>
+          <p class="t-gk">役の番号の差が ちょうど <b>2</b> か <b>5</b> なら、<b>弱い役の勝ち</b>。<br>例：ワンペア（2）は マークツキペア（4）に勝つ</p></div>
+        <div class="t-page" data-p="4" hidden><h3>1回の流れ</h3>
+          <ol class="t-steps">
+            <li><span>参加料 <b>5マイ</b> を出す<small>手札3マイと、まん中に2マイが配られる。まん中は表のままで、お互い同じものを使う</small></span></li>
+            <li><span>手札から <b>2マイ</b> 選んで「ケッテイ」<small>残りの1マイは焼ける。選んだ2マイ＋まん中2マイ＝4マイで役を作る</small></span></li>
+            <li><span>1回目のカケ</span></li>
+            <li><span>出した2マイのうち <b>1マイ</b> を お互い見せる</span></li>
+            <li><span>2回目のカケ<small>ここでは「オリル」もできる</small></span></li>
+            <li><span>対決<small>役で勝った方が、卓の上のチップを全部もらう。まったく同じなら引き分け</small></span></li>
+          </ol>
+          <p class="t-note">先手は1回ごとに交代（1回目はチップの投げ合いで決める）</p></div>
         <div class="t-page" data-p="3" hidden><h3>ツカウ カード（24マイ）</h3>
-          <p>数字 1〜8 × 背景の色 3つ（赤・青・緑）で、全部で24枚。同じカードは1枚ずつしかない。背景の色が、トランプのマーク（スート）の代わり。</p>
+          <p>数字 1〜8 × 色 3つ（赤・青・緑）。同じカードは1マイずつ。色がトランプのマークの代わり。</p>
           <div class="t-deck">${['red', 'blue', 'green'].map(c => `<div class="t-deck-row"><span class="t-deck-c ${c[0]}">${{ red: '赤', blue: '青', green: '緑' }[c]}</span>${[1, 2, 3, 4, 5, 6, 7, 8].map(n => `<img src="art/${c}-${n}.webp" alt="${{ red: '赤', blue: '青', green: '緑' }[c]}の${n}" loading="lazy">`).join('')}</div>`).join('')}</div>
-          <p>毎回24枚をよく混ぜて、真ん中に2枚、お互いに3枚ずつ配る（使うのは8枚。残りの16枚は使わない）。</p>
-        </div>
-        <div class="t-page" data-p="1" hidden><h3>ハンド（強い順）</h3>
+          <p>毎回よく混ぜて、まん中に2マイ・お互いに3マイずつ配る。</p></div>
+        <div class="t-page" data-p="1" hidden><h3>ハンド（番号が大きいほど強い）</h3>
         <ol>${HANDS.map(([nm, ds, ex], i) => { const up = upsetOf(i + 1);
           return `<li><span class="no">${SHOWN_NO(i + 1)}</span><span class="nm">${nm}${up.length ? `<em class="gk">${up.map(SHOWN_NO).sort((a, b) => b - a).join('・')}ニ カツ</em>` : ''}</span><span class="ds">${ds}</span><span class="ex">${ex.split(' ').map(t => `<b class="${t[0]}">${t.slice(1)}</b>`).join('')}</span></li>`; }).join('')}</ol>
-        <h3>ゲコクジョウ（2と5のルール）</h3>
-        <p>役の番号の差がちょうど <b>2</b> か <b>5</b> のときは、弱い方（番号が小さい方）が勝つ。それ以外は強い方が勝つ。同じ役なら、数字の大きさで比べる。</p></div>
-        <div class="t-page" data-p="2" hidden><h3>賭け</h3>
-        <p>先手から順に動く。先手は1回ごとに交代（1回目はチップの投げ合いで決める）。</p>
-        <p>1回目：ヨウスミ／1マイ／2マイ。2回目：ヨウスミ／1マイ／4マイ。</p>
-        <p>賭けられたら「同じ枚数でカケル」か「倍にしてカケル（上乗せ）」。上乗せは1回の賭けにつき1度だけ。2回目の賭けでは「オリル」もできる。オリたら、それまでに出したチップは相手のもの。</p></div>`;
+        <p class="t-gk"><b>赤い札</b>＝ゲコクジョウで勝てる役（番号の差がちょうど2か5）。同じ役なら、数字の大きさで比べる。</p></div>
+        <div class="t-page" data-p="2" hidden><h3>自分の番</h3>
+          <ul class="t-big"><li><b>ヨウスミ</b>：賭けずに 相手に回す</li><li><b>カケル</b>：1回目は 1マイ か 2マイ、2回目は 1マイ か 4マイ</li></ul>
+          <h3>賭けられたら</h3>
+          <ul class="t-big"><li><b>同じ枚数でカケル</b>：受ける</li><li><b>倍にしてカケル</b>：上乗せ（1回のカケで1度だけ）。上乗せされた方は、足りない分を足す</li><li><b>オリル</b>：2回目のカケだけ。それまでに出したチップは 相手のもの</li></ul>
+          <p class="t-note">先手から順に動く</p></div>`;
       // タブで切り替える（スクロールしなくても1ページに収まるように分ける）
       pn.querySelector('.t-tabs').addEventListener('click', e => {
         const b = e.target.closest('[data-p]'); if (!b) return; playSfx('chipClack', .3);

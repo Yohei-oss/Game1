@@ -299,8 +299,12 @@ body {
 .cb-num.cb-fold span { margin-left: 0; max-width: 90%; }   /* 降りたときの「オリタ」の札：番号の丸がないので文字は真ん中 */
 .result-msg { position: fixed; z-index: 46; left: 50%; top: 50%; margin: 0; transform: translate(-50%, -50%); pointer-events: none; white-space: nowrap;
   font: 30px "Mochiy Pop One", sans-serif; color: #ffe36a; -webkit-text-stroke: .24em var(--ink); paint-order: stroke fill; opacity: 0; }
+/* ページを開いた最初のロゴ動画（YON FLAT。音なしで自動再生）：白い画面いっぱいに出し、終わったら白ごとふわっと消えてタイトルへ */
+.intro { position: fixed; inset: 0; z-index: 200; background: #fff; display: flex; align-items: center; justify-content: center; }
+.intro video { width: 100%; height: 100%; object-fit: cover; background: #fff; pointer-events: none; }
 </style>
 
+<div class="intro" id="intro" aria-hidden="true"><video src="video/intro.mp4" muted playsinline autoplay preload="auto"></video></div>
 <div class="rail left" aria-hidden="true"></div>
 <div class="rail right" aria-hidden="true"></div>
 
@@ -2308,6 +2312,25 @@ body {
     updateGauge(); showRound();
     showTitle();
   }
-  showTitle();   // はじめはタイトルの場面（PvE を押すと、7回勝負の1回目の先手決めから）
+  // はじめはロゴ動画 → タイトルの場面（PvE を押すと、7回勝負の1回目の先手決めから）
+  // 動画が終わる（3.5秒）か、タップするか、再生できなかったら、タイトルを始めて、白ごと0.45秒で消える
+  (function playIntro() {
+    const el = document.getElementById('intro'), v = el && el.querySelector('video');
+    if (!el) { showTitle(); return; }
+    let done = false;
+    const finish = () => {
+      if (done) return; done = true;
+      el.style.pointerEvents = 'none';
+      showTitle();   // 白が消えていく下で、もうタイトルが始まる（卓のカードなどが一瞬見えないように）
+      if (reduceMotion) { el.remove(); return; }
+      el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 450, easing: 'ease-out', fill: 'forwards' }).finished.then(() => el.remove(), () => el.remove());
+    };
+    if (reduceMotion) { finish(); return; }
+    v.addEventListener('ended', finish);
+    v.addEventListener('error', finish);
+    el.addEventListener('pointerdown', finish);   // タップで飛ばせる（そのタップで BGM も流れ始める）
+    const p = v.play(); if (p) p.catch(finish);    // 自動再生できなかったら飛ばす
+    setTimeout(finish, 6000);                     // 念のため：何があっても6秒でタイトルへ
+  })();
 })();
 </script>

@@ -122,6 +122,8 @@ body {
 .hand-panel .ex em { font-style: normal; font-size: 11px; color: #8a8478; }
 .hand-panel .note { margin: 6px 0 0; font-size: 10.5px; color: #4a4744; }
 /* タイトルの場面：真ん中に「YON POKER」の文字、「4」のカード3枚、その下にボタン */
+.title-scr .t-warm { position: fixed; left: 0; bottom: 0; width: clamp(74px, 19.5vw, 128px); height: calc(clamp(74px, 19.5vw, 128px) * 1.4); opacity: .01; pointer-events: none; z-index: -1; }
+.title-scr .t-warm img { position: absolute; inset: 0; border: 0; box-shadow: none; }   /* 25枚を同じ場所に重ねる（画面の外だと描かれないので） */
 .title-scr { position: fixed; inset: 0; z-index: 40; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: clamp(14px, 3.5vh, 30px); }
 .title-scr .t-logo { margin: 0; font: clamp(46px, 11vw, 104px) "Luckiest Guy", sans-serif; letter-spacing: .04em; line-height: 1; color: #fff; white-space: nowrap;
   -webkit-text-stroke: .1em var(--ink); paint-order: stroke fill; text-shadow: 0 .07em 0 rgba(0,0,0,.45); opacity: 0; }
@@ -1209,8 +1211,9 @@ body {
   // composite: 'add' で、前に出た位置などほかの動きに「足す」ので、カードの位置はそのまま
   const FLIP_MS = 460, HALF = .46;
   const decoded = new Map();
+  const keepImgs = [];   // 読み込んだ絵を手放さない（手放すと、用意した絵が捨てられて、はじめて出すときに引っかかることがある）
   function preload(src) {
-    if (!decoded.has(src)) { const im = new Image(); im.src = src; decoded.set(src, im.decode().catch(() => {})); }
+    if (!decoded.has(src)) { const im = new Image(); im.src = src; keepImgs.push(im); decoded.set(src, im.decode().catch(() => {})); }
     return decoded.get(src);
   }
   async function flipCard(c, swap, nextSrc) {
@@ -2116,6 +2119,13 @@ body {
       b.animate([{ transform: `translateX(${innerWidth}px)` }, { transform: 'translateX(-8px)', offset: .8 }, { transform: 'none' }],
         { duration: 520, delay: i * 90, easing: 'cubic-bezier(.2,.8,.3,1)', fill: 'backwards' });
     });
+    // 5. 下ごしらえ：カードの絵（表24枚＋裏）を、目に見えないほど薄く、カードと同じ大きさで一度だけ描いておく。
+    //    はじめて試合を始めたとき、絵を初めて描く準備で一瞬引っかかるのを防ぐ（タイトルを離れると一緒に消える）
+    await wait(520 + 3 * 90 + 200);
+    if (titleEl !== el) return;
+    const warm = document.createElement('div'); warm.className = 't-warm'; warm.setAttribute('aria-hidden', 'true');
+    warm.innerHTML = ['back.webp', ...['red', 'blue', 'green'].flatMap(c => [1, 2, 3, 4, 5, 6, 7, 8].map(n => `art/${c}-${n}.webp`))].map(src => `<img class="card" src="${src}" alt="">`).join('');
+    el.appendChild(warm);
   }
   function onTitleClick(e) {
     const b = e.target.closest('.t-btn'); if (!b || !titleEl || titleEl.dataset.leaving) return;
